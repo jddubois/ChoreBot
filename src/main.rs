@@ -14,6 +14,7 @@ struct Handler;
 // start working and sending messages to chores channel
 
 static CHORES_CHANNEL_NAME: &str = "chores";
+static CONF: config::Config = Config::new();
 
 fn get_chores_channel(context: &Context, guild_id: &GuildId) -> std::result::Result<GuildChannel, ()> {
     let channels_result = guild_id.channels(context);
@@ -75,32 +76,35 @@ impl EventHandler for Handler {
 
     }
     fn message(&self, context: Context, msg: Message) {
+        let prefix = CONF.prefix();
+        if msg.content.starts_with(prefix) {
+            let responses: Vec<&str> = vec![
+               "What is earned with hard labor is eaten with pleasure.",
+               "The hardest work of all is to do nothing.",
+               "It is hard work to be the mother of many pigs.",
+               "It is no credit to anyone to work too hard.",
+               "Hard work beats all the tonics and vitamins in the world.",
+               "Hard work is the key to success",
+               "Whatever muscles I have are the product of my own hard work.",
+               "You don't get anything clean without getting something else dirty.",
+               "Housework, if you do it right, will kill you.",
+               "There is no need to do any housework at all. After the first four years the dirt doesn't get any worse.",
+               "A spotless house is the sign of a misspent life.",
+           ];
+           let mut rng = thread_rng();
+           let n: usize = rng.gen_range(0, responses.len());
 
-        let responses: Vec<&str> = vec![
-            "What is earned with hard labor is eaten with pleasure.",
-            "The hardest work of all is to do nothing.",
-            "It is hard work to be the mother of many pigs.",
-            "It is no credit to anyone to work too hard.",
-            "Hard work beats all the tonics and vitamins in the world.",
-            "Hard work is the key to success",
-            "Whatever muscles I have are the product of my own hard work.",
-            "You don't get anything clean without getting something else dirty.",
-            "Housework, if you do it right, will kill you.",
-            "There is no need to do any housework at all. After the first four years the dirt doesn't get any worse.",
-            "A spotless house is the sign of a misspent life.",
-        ];
-        let mut rng = thread_rng();
-        let n: usize = rng.gen_range(0, responses.len());
-
-        let response = responses[n];
-        if msg.content == "!Complete" || msg.content == "!complete" {
-            let _ = msg.channel_id.say(&context, response);
+           let response = responses[n];
+           if msg.content == "!Complete" || msg.content == "!complete" {
+               let _ = msg.channel_id.say(&context, response);
+           }   
         }
     }
 }
 
 fn main() {
-    let token = Config::new().token();
+    let token = CONF.token();
+    println!("{}", token);
     let mut client = Client::new(&token, Handler).unwrap();
     if let Err(err) = client.start() {
         println!("Failed to start client: {:#?}", err);

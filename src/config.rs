@@ -11,7 +11,7 @@ pub struct Config {
 }
 
 impl Config {
-	pub fn new() -> Self{
+	pub const fn new() -> Self{
 		return Config {
 			token:  private::TOKEN,
 			prefix: private::PREFIX,
