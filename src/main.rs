@@ -61,8 +61,9 @@ fn assign_chores(context: &Context, guild_id: &GuildId) {
 
     let mut rng = thread_rng();
     chores.shuffle(&mut rng);
-    for chore in chores.iter() {
-        let _ = chores_channel.say(context, format!("Chore is {}", chore));
+    let members = guild_id.members(context, Some(1000), None).unwrap();
+    for ind in 0..chores.len() {
+        let _ = chores_channel.say(context, format!("{}, your chore is {}", members[ind].mention(), chores[ind]));
     }
 }
 
@@ -70,8 +71,8 @@ impl EventHandler for Handler {
     fn cache_ready(&self, context: Context, guild_ids: Vec<GuildId>) {
         for guild_id in guild_ids {
             ensure_chores_channel_exists(&context, &guild_id);
-            assign_chores(&context, &guild_id);
             say_hello(&context, &guild_id);
+            assign_chores(&context, &guild_id);
         }
 
     }
