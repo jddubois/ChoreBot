@@ -95,7 +95,11 @@ impl EventHandler for Handler {
            let n: usize = rng.gen_range(0, responses.len());
 
            let response = responses[n];
-           if msg.content == "!Complete" || msg.content == "!complete" {
+           let pref_len = prefix.len();
+           let mut msg_content = msg.content;
+           let pref_str: String = msg_content.drain(..pref_len).collect();
+           println!("{}", pref_str);
+           if msg_content == "Complete" || msg_content == "complete" {
                let _ = msg.channel_id.say(&context, response);
            }   
         }
