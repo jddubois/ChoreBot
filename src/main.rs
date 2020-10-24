@@ -1,8 +1,12 @@
+pub mod config;
+use config::Config;
+
 use serenity::model::id::GuildId;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::Client;
-use rand::{thread_rng, Rng};
+use rand::seq::SliceRandom;
+use rand::{thread_rng, Rng,};
 
 struct Handler;
 
@@ -35,18 +39,37 @@ fn ensure_chores_channel_exists(context: &Context, guild_id: &GuildId) {
 }
 
 
-fn say_hello(context: &Context, guild_id: &GuildId) {
+fn say_hello(context: &Context, guild_id: &GuildId) {   
+   let chores_channel = get_chores_channel(context, guild_id).unwrap();
    for member_result in  guild_id.members_iter(context) {
        let member = member_result.unwrap();
-       let chores_channel = get_chores_channel(context, guild_id).unwrap();
+       println!("member is {}", member.display_name());
        let _ = chores_channel.say(context, format!("Hello, {}!", member.mention()));
    }
+}
+
+fn assign_chores(context: &Context, guild_id: &GuildId) {
+    let chores_channel = get_chores_channel(context, guild_id).unwrap();
+    let mut chores: Vec<&str> = vec! [
+        "Floors",
+        "Kitchen",
+        "Sink",
+        "Dishes",
+        "Four-season",
+    ];
+
+    let mut rng = thread_rng();
+    chores.shuffle(&mut rng);
+    for chore in chores.iter() {
+        let _ = chores_channel.say(context, format!("Chore is {}", chore));
+    }
 }
 
 impl EventHandler for Handler {
     fn cache_ready(&self, context: Context, guild_ids: Vec<GuildId>) {
         for guild_id in guild_ids {
             ensure_chores_channel_exists(&context, &guild_id);
+            assign_chores(&context, &guild_id);
             say_hello(&context, &guild_id);
         }
 
@@ -70,14 +93,14 @@ impl EventHandler for Handler {
         let n: usize = rng.gen_range(0, responses.len());
 
         let response = responses[n];
-        if msg.content == "I done did do my chores" {
+        if msg.content == "!Complete" || msg.content == "!complete" {
             let _ = msg.channel_id.say(&context, response);
         }
     }
 }
 
 fn main() {
-    let token = "";
+    let token = Config::new().token();
     let mut client = Client::new(&token, Handler).unwrap();
     if let Err(err) = client.start() {
         println!("Failed to start client: {:#?}", err);
