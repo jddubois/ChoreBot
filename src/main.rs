@@ -1,8 +1,8 @@
+use rand::{thread_rng, Rng};
 use serenity::model::id::GuildId;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::Client;
-use rand::{thread_rng, Rng};
 
 struct Handler;
 
@@ -34,20 +34,27 @@ fn ensure_chores_channel_exists(context: &Context, guild_id: &GuildId) {
     }
 }
 
+fn assign_chores(context: &Context, guild_id: &GuildId) {
+    let mut shuffled_members = Vec::new();
+    for member_result in guild_id.members_iter(context) {
+        shuffled_members.push(member_result);
+    }
 
-fn say_hello(context: &Context, guild_id: &GuildId) {
-   for member_result in  guild_id.members_iter(context) {
-       let member = member_result.unwrap();
-       let chores_channel = get_chores_channel(context, guild_id).unwrap();
-       let _ = chores_channel.say(context, format!("Hello, {}!", member.mention()));
-   }
+    thread_rng().shuffle(&mut shuffled_members);
+
+    for member_result in shuffled_members {
+        let member = member_result.unwrap();
+        let chores_channel = get_chores_channel(context, guild_id).unwrap();
+        let _ = chores_channel.say(context, format!("Hello, {:?}!", member.user_id().to_user(context).unwrap().name));
+    }
 }
+
 
 impl EventHandler for Handler {
     fn cache_ready(&self, context: Context, guild_ids: Vec<GuildId>) {
         for guild_id in guild_ids {
             ensure_chores_channel_exists(&context, &guild_id);
-            say_hello(&context, &guild_id);
+            assign_chores(&context, &guild_id);
         }
 
     }
@@ -77,7 +84,7 @@ impl EventHandler for Handler {
 }
 
 fn main() {
-    let token = "";
+    let token = "NzY3NDUwNDY2NzE5MTA1MDU0.X4yF8Q.xnXnFN52wvxzXzAAjrZCiI_IYJM";
     let mut client = Client::new(&token, Handler).unwrap();
     if let Err(err) = client.start() {
         println!("Failed to start client: {:#?}", err);
