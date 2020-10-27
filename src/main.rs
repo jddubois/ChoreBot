@@ -84,7 +84,7 @@ impl EventHandler for Handler {
 }
 
 fn main() {
-    let token = "NzY3NDUwNDY2NzE5MTA1MDU0.X4yF8Q.xnXnFN52wvxzXzAAjrZCiI_IYJM";
+    let token = "";
     let mut client = Client::new(&token, Handler).unwrap();
     if let Err(err) = client.start() {
         println!("Failed to start client: {:#?}", err);
